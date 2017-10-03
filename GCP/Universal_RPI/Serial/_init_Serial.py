@@ -14,20 +14,21 @@ class initSerial():
                 self.port_names.append(line)
 
         self.serial_address = None
-        self.ser = None
+        self.ser = serial.Serial('COM3', 9600, timeout=0.05)
         self.connected = 0
 
     def establishedPort(self, port):
         self.serial_address = port
 
-    def connect_Serial(self, data):
-        if data is None:
+    def connect_Serial(self):
+        #if data is None:
             print('Connecting to Arduino.')
 
             for try_port in self.port_names:
                 try:
                     self.ser = serial.Serial(try_port, 9600, timeout=0.05)
-                    print('Connecting to Arduino using {} serial address.').format(try_port)
+                    print(try_port)
+                    # print("Connecting to Arduino using open port {}.").format(try_port)
                 except Exception as e:
                     print(e)
                 # print ("Connection failed. Retrying")
@@ -35,6 +36,7 @@ class initSerial():
                     print("Connected to {}").format(try_port)
                     self.establishedPort(try_port)
                     self.connected = 1
+
 
     def serial_event(self, data_type):
         data = self.ser.readline()
@@ -61,7 +63,7 @@ class initSerial():
                 self.ser.__del__()
                 self.connected = 0
             except Exception as e:
-                print("Error {} has occured while closing serial.  ").format(e)
+                print("Error {} has occured while closing serial.").format(e)
 
         def _force():
             print("Force closing")

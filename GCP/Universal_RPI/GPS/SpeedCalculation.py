@@ -29,9 +29,12 @@ def geod_distance(lati_1, long_1, lati_2, long_2):
 
     #Dot product
     dot = ((pnt_x * qnt_x) + (pnt_y * qnt_y) + (pnt_z * qnt_z))
-    cos_theta = dot / math.sqrt(r)
+    cos_theta = dot / (r*r)
 
-    theta = math.acos(cos_theta)
+    if cos_theta < 1 and cos_theta > -1:
+        theta = math.acos(cos_theta)
+    else:
+        return 0
 
     #distance in meters
     return r * theta
