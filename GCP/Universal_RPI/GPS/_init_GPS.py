@@ -48,14 +48,16 @@ class initGPS():
     def check_instance(self, data):
         try:
             if b'Sat' in data:
-                data.split('Sat')[0]
-                self.SatN = float(data)
+                print (data)
+                temp = data.replace("Sat", "")
+                print (temp)
+                self.SatN = data
             if b'Lat' in data:
-                data.split('Lat')[0]
-                self.c_lat_value = float(data)
+                data = data.replace("Lat", "")
+                self.c_lat_value = data
             if b'Lon' in data:
-                data.split('Lon')[0]
-                self.c_lon_value = float(data)
+                data = data.replace("Lon","")
+                self.c_lon_value = data
         except Exception:
             pass
 
@@ -97,16 +99,19 @@ def RUN_GPS():
 
             while GPS.c_lat_value is None and GPS.c_lon_value is None:
                 event_data = _serial.serial_event(str)
-                time.sleep(1)
-                # print(event_data)
+                time.sleep(.5)
+                # print (event_data)
                 GPS.check_instance(event_data)
+                print (GPS.c_lat_value)
+                print (GPS.c_lon_value)
+
 
             GPS.old_instance()
             t_stamp2 = time.time()
             distance = SpeedCalculation.geod_distance(GPS.c_lat_value, GPS.c_lat_value, GPS.o_lon_value,
                                                       GPS.o_lon_value)
-
-            time_delta = t_stamp1 - t_stamp2
+            print (distance)
+            time_delta = t_stamp2 - t_stamp1
             speed_mps = distance / time_delta
             # speed_kph = (speed_mps * 3600.0) / 1000.0
             print(speed_mps)

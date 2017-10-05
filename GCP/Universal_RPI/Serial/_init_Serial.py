@@ -8,13 +8,13 @@ class initSerial():
         self.port_names = ("/dev/tty.usbserial-A9007UX1",  # MacOSX
                            "/dev/ttyACM0",  # Raspberry Pi
                            "/dev/ttyUSB0",  # Linux
-                           "COM3")  # Window
+                           "COM8")  # Window
         if args:
             for line in args:
                 self.port_names.append(line)
 
         self.serial_address = None
-        self.ser = serial.Serial('COM3', 9600, timeout=0.05)
+        self.ser = None
         self.connected = 0
 
     def establishedPort(self, port):
@@ -33,7 +33,7 @@ class initSerial():
                     print(e)
                 # print ("Connection failed. Retrying")
                 else:
-                    print("Connected to {}").format(try_port)
+                    #print("Connected to {}").format(try_port)
                     self.establishedPort(try_port)
                     self.connected = 1
 
