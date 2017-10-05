@@ -27,12 +27,12 @@ class initSerial():
             for try_port in self.port_names:
                 try:
                     self.ser = serial.Serial(try_port, 9600, timeout=0.05)
-                    print(try_port)
                     # print("Connecting to Arduino using open port {}.").format(try_port)
                 except Exception as e:
                     print(e)
                 # print ("Connection failed. Retrying")
                 else:
+                    print("Connected")
                     #print("Connected to {}").format(try_port)
                     self.establishedPort(try_port)
                     self.connected = 1

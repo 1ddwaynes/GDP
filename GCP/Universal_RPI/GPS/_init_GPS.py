@@ -4,18 +4,18 @@ import _init_Serial
 import threading
 
 
-class numStore():
-    def __init__(self):
-        self.num_a = None
-        self.num_b = None
-
-    def numChange(self, a, b):
-        self.num_a = a
-        self.num_b = b
-
-    def numStale(self, a , b):
-        if self.num_a == a or self.num_b == b:
-            return True
+# class numStore():
+#     def __init__(self):
+#         self.num_a = None
+#         self.num_b = None
+#
+#     def numChange(self, a, b):
+#         self.num_a = a
+#         self.num_b = b
+#
+#     def numStale(self, a , b):
+#         if self.num_a == a or self.num_b == b:
+#             return True
 
 # class initGPS(threading.Thread):
 class initGPS():
@@ -46,20 +46,24 @@ class initGPS():
     # otherwise incorrect data can be passed, causing problems
     # could possible be expanded on or moved to _init_serial.py
     def check_instance(self, data):
-        try:
-            if b'Sat' in data:
-                print (data)
-                temp = data.replace("Sat", "")
-                print (temp)
-                self.SatN = data
-            if b'Lat' in data:
+        if data:
+            if "Sat" in data:
+                data = data.replace("Sat", "")
+                try:
+                    self.SatN = float(data)
+                except Exception as e:
+                    print (e)
+                    data = data[:-6]
+                    self.SatN = float(data)
+            elif "Lat" in data:
+               # print ("lat")
                 data = data.replace("Lat", "")
-                self.c_lat_value = data
-            if b'Lon' in data:
+                self.c_lat_value = float(data)
+            elif "Lon" in data:
+               # print ("Lon")
                 data = data.replace("Lon","")
-                self.c_lon_value = data
-        except Exception:
-            pass
+                self.c_lon_value = float(data)
+
 
     def old_instance(self):
         self.o_lat_value = self.c_lat_value
@@ -97,21 +101,20 @@ def RUN_GPS():
         while GPS.collect is True:
             t_stamp1 = time.time()
 
-            while GPS.c_lat_value is None and GPS.c_lon_value is None:
+            while GPS.c_lat_value is None or GPS.c_lon_value is None:
                 event_data = _serial.serial_event(str)
+               # print(event_data)
                 time.sleep(.5)
                 # print (event_data)
                 GPS.check_instance(event_data)
                 print (GPS.c_lat_value)
                 print (GPS.c_lon_value)
 
-
             GPS.old_instance()
             t_stamp2 = time.time()
             distance = SpeedCalculation.geod_distance(GPS.c_lat_value, GPS.c_lat_value, GPS.o_lon_value,
                                                       GPS.o_lon_value)
-            print (distance)
-            time_delta = t_stamp2 - t_stamp1
+            time_delta = t_stamp1 - t_stamp2 / t_stamp1
             speed_mps = distance / time_delta
             # speed_kph = (speed_mps * 3600.0) / 1000.0
             print(speed_mps)
