@@ -5,8 +5,10 @@
       <sourceFolder url="file://$MODULE_DIR$/GCP/Universal_RPI" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/GCP/Universal_RPI/GPS" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/GCP/Universal_RPI/Serial" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/GCP" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/GCP/Universal_RPI/Motor" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.6.2 (E:\Users\MiniHDNext\AppData\Local\Programs\Python\Python36\python.exe)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

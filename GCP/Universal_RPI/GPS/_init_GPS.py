@@ -1,27 +1,14 @@
-import time
-import SpeedCalculation
 import _init_Serial
-import threading
+import SpeedCalculation
+import time
 
-
-# class numStore():
-#     def __init__(self):
-#         self.num_a = None
-#         self.num_b = None
-#
-#     def numChange(self, a, b):
-#         self.num_a = a
-#         self.num_b = b
-#
-#     def numStale(self, a , b):
-#         if self.num_a == a or self.num_b == b:
-#             return True
 
 # class initGPS(threading.Thread):
-class initGPS():
+class InitGPS:
     def __init__(self):
         # threading.Thread.__init__(self)
-        # number of satellites (can possible be used for strength of signal
+
+        # number of satellites detected by GPS
         self.SatN = None
         # current latitude and longitude values
         self.c_lat_value = None
@@ -31,104 +18,107 @@ class initGPS():
         self.o_lon_value = None
         # once start default to turned on
         self.collect = True
-        self.empty = None
 
+    # used to disable polling for GPS values, only necessary for polling timeouts
     def disable_GPS(self):
         collect = False
 
     def get_current_GPS_cord(self):
-        return self.lat_value,self.lon_value
+        return self.c_lat_value, self.c_lon_value
 
     def get_current_num_SatN(self):
         return self.SatN
 
-    # serial data check, handshakes for certain data stream within serial
-    # otherwise incorrect data can be passed, causing problems
-    # could possible be expanded on or moved to _init_serial.py
+    # check data for string, handshakes for certain data stream within serial buffer
+    # otherwise incorrect data can be passed through causing invalid coordinate assignment
+    # could possible be expanded on
     def check_instance(self, data):
         if data:
             if "Sat" in data:
                 data = data.replace("Sat", "")
                 try:
                     self.SatN = float(data)
+                # there's a problem with how Sat data is being sent from Arduino
+                # should be unnecessary in the future
                 except Exception as e:
-                    print (e)
+                    print(e)
                     data = data[:-6]
                     self.SatN = float(data)
             elif "Lat" in data:
-               # print ("lat")
+                # print ("lat")
                 data = data.replace("Lat", "")
                 self.c_lat_value = float(data)
             elif "Lon" in data:
-               # print ("Lon")
-                data = data.replace("Lon","")
+                # print ("Lon")
+                data = data.replace("Lon", "")
                 self.c_lon_value = float(data)
 
-
+    # store passed valid cordial data for speed calculation
     def old_instance(self):
         self.o_lat_value = self.c_lat_value
         self.o_lon_value = self.c_lon_value
 
-    # threading
-#     def run(self):
-#         _serial = _init_Serial.initSerial()
-#         try:
-#             while True:
-#                 temp_holder = _serial.serial_event(str)
-#                 self.check_instance(temp_holder)
-#
-# if __name__ == '__main__':
-#     _serial = _init_Serial.initSerial()
-#     try:
-#         _serial.
+    # checks for repeated cord, prevents useless iteration of the speed calculation module
+    def isStale(self):
+        if self.c_lat_value == self.o_lat_value or self.c_lon_value == self.o_lon_value:
+            return True
+        else:
+            return False
 
+    # deletes/resets the current cordial data
+    def reset_c(self):
+        self.c_lat_value = None
+        self.c_lon_value = None
+
+
+# Main module for GPS interfacing, could be moved to a separate modulate for possible threading implementation
 def RUN_GPS():
+    # initialize variables
+    _serial = _init_Serial.InitSerial()
+    GPS = InitGPS()
 
-        # initialize variables
-        _serial = _init_Serial.initSerial()
-        GPS = initGPS()
+    # connects to serial if serial is NOT connected
+    if _serial.connected == 0:
+        _serial.connect_Serial()
 
-        # connects to serial if serial is NOT connected
-        if _serial.connected == 0:
-            _serial.connect_Serial()
+    while GPS.collect is True:
+        GPS.reset_c()
+        t_stamp1 = time.time()
 
-        # first time stamp to be stored
-        # time.time() is used for linux
-
-
-        # reads the string coming from serial
-
-        while GPS.collect is True:
+        while GPS.c_lat_value is None or GPS.c_lon_value is None or GPS.SatN is None:
+            event_data = _serial.serial_event(str)
+            GPS.check_instance(event_data)
+            # first time stamp to be stored, time.time() is used for linux polling
             t_stamp1 = time.time()
 
-            while GPS.c_lat_value is None or GPS.c_lon_value is None:
-                event_data = _serial.serial_event(str)
-               # print(event_data)
-                time.sleep(.5)
-                # print (event_data)
-                GPS.check_instance(event_data)
-                print (GPS.c_lat_value)
-                print (GPS.c_lon_value)
-
+        if GPS.o_lat_value is None and GPS.o_lon_value is None:
             GPS.old_instance()
-            t_stamp2 = time.time()
+
+        if GPS.isStale is False:
             distance = SpeedCalculation.geod_distance(GPS.c_lat_value, GPS.c_lat_value, GPS.o_lon_value,
                                                       GPS.o_lon_value)
-            time_delta = t_stamp1 - t_stamp2 / t_stamp1
-            speed_mps = distance / time_delta
-            # speed_kph = (speed_mps * 3600.0) / 1000.0
-            print(speed_mps)
-           # _serial.close_serial._force()
+
+            t_stamp2 = time.time()
+            SpeedCalculation.print_speed(t_stamp1, t_stamp2, distance)
+            GPS.old_instance()
+            print(GPS.get_current_num_SatN)
 
 
-        # try:
-        #     time_delta = time_s2 - times_s
-        # except AttributeError:
-        #     raise AssertionError('Input variables should be strings')
+# debugging
+if __name__ == '__main__':
+    RUN_GPS()
 
-        # _serial.outputStream(time_delta, False)
+    # _serial.close_serial._force()
 
-        # reads latitude coordinate
+
+    # try:
+    #     time_delta = time_s2 - times_s
+    # except AttributeError:
+    #     raise AssertionError('Input variables should be strings')
+
+    # _serial.outputStream(time_delta, False)
+
+    # reads latitude coordinate
 #         new_lat = _serial.serial_event(float)
 #
 #         # if the value is not valid wait for a valid value from serial port
@@ -198,7 +188,3 @@ def RUN_GPS():
 #   #      return False
 #    # else:
 #     #    return True
-
-#loops the main loop
-if __name__ == '__main__':
-    RUN_GPS()

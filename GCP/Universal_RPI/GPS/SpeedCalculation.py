@@ -38,3 +38,11 @@ def geod_distance(lati_1, long_1, lati_2, long_2):
 
     #distance in meters
     return r * theta
+
+def print_speed(time_1, time_2, distance):
+
+    time_delta = time_1 - time_2 / time_1
+    speed_mps = distance / time_delta
+    speed_kph = (speed_mps * 3600.0) / 1000.0
+
+    print  (speed_mps)

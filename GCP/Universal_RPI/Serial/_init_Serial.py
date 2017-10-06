@@ -3,22 +3,22 @@ import serial
 import time
 
 
-class initSerial():
+class InitSerial():
     def __init__(self, *args):
         self.port_names = ("/dev/tty.usbserial-A9007UX1",  # MacOSX
                            "/dev/ttyACM0",  # Raspberry Pi
                            "/dev/ttyUSB0",  # Linux
-                           "COM8")  # Window
+                           "COM1")  # Window
         if args:
             for line in args:
                 self.port_names.append(line)
 
-        self.serial_address = None
+        self.validport_address = None
         self.ser = None
         self.connected = 0
 
     def establishedPort(self, port):
-        self.serial_address = port
+        self.validport_address = port
 
     def connect_Serial(self):
         #if data is None:
@@ -39,22 +39,24 @@ class initSerial():
 
 
     def serial_event(self, data_type):
-        data = self.ser.readline()
-        if data and self.valid_data(data) is True:
-            try:
-                if data_type is str:
-                    # try:
-                    data = str(data.decode('utf-8'))
-                elif data_type is float:
-                    # try:
-                    data = float(data.decode('utf-8'))
-                elif data_type is int:
-                    # try:
-                    data = int(data.decode('utf-8'))
-            except Exception as e:
-                print("Readline Error")
-                print(e)
-            return data
+        if self.ser.in_waiting > 0:
+            data = self.ser.readline()
+            if data and self.valid_data(data) is True:
+                try:
+                    if data_type is str:
+                            # try:
+                        data = str(data.decode('utf-8'))
+                    elif data_type is float:
+                            # try:
+                        data = float(data.decode('utf-8'))
+                    elif data_type is int:
+                            # try:
+                        data = int(data.decode('utf-8'))
+                except Exception as e:
+                    print("Readline Error")
+                    print(e)
+                return data
+
 
     # closes port to prevent port locking
     def close_serial(self):

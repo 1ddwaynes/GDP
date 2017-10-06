@@ -10,6 +10,4 @@ def check_val(data, what):
 
 
 def main():
-
-    while 1:
-        _init_GPS
+    pass
