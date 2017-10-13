@@ -8,7 +8,7 @@ class InitSerial():
         self.port_names = ("/dev/tty.usbserial-A9007UX1",  # MacOSX
                            "/dev/ttyACM0",  # Raspberry Pi
                            "/dev/ttyUSB0",  # Linux
-                           "COM1")  # Window
+                           "COM8")  # Window
         if args:
             for line in args:
                 self.port_names.append(line)
@@ -29,7 +29,7 @@ class InitSerial():
                     self.ser = serial.Serial(try_port, 9600, timeout=0.05)
                     # print("Connecting to Arduino using open port {}.").format(try_port)
                 except Exception as e:
-                    print(e)
+                    pass
                 # print ("Connection failed. Retrying")
                 else:
                     print("Connected")
@@ -39,7 +39,6 @@ class InitSerial():
 
 
     def serial_event(self, data_type):
-        if self.ser.in_waiting > 0:
             data = self.ser.readline()
             if data and self.valid_data(data) is True:
                 try:
@@ -56,7 +55,6 @@ class InitSerial():
                     print("Readline Error")
                     print(e)
                 return data
-
 
     # closes port to prevent port locking
     def close_serial(self):

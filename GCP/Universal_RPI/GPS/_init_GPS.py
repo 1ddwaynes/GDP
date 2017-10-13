@@ -36,14 +36,11 @@ class InitGPS:
         if data:
             if "Sat" in data:
                 data = data.replace("Sat", "")
-                try:
-                    self.SatN = float(data)
+                self.SatN = float(data)
                 # there's a problem with how Sat data is being sent from Arduino
                 # should be unnecessary in the future
-                except Exception as e:
-                    print(e)
-                    data = data[:-6]
-                    self.SatN = float(data)
+                    #data = data[:-6]
+                    #self.SatN = float(data)
             elif "Lat" in data:
                 # print ("lat")
                 data = data.replace("Lat", "")
@@ -81,27 +78,42 @@ def RUN_GPS():
     if _serial.connected == 0:
         _serial.connect_Serial()
 
+
+
     while GPS.collect is True:
-        GPS.reset_c()
+        #
         t_stamp1 = time.time()
 
-        while GPS.c_lat_value is None or GPS.c_lon_value is None or GPS.SatN is None:
+        # resets GPS values if GPS values exist
+        if GPS.c_lat_value and GPS.c_lon_value:
+            GPS.reset_c()
+
+        # main loop that reads GPS values
+        while GPS.c_lat_value is None or GPS.c_lon_value is None:
             event_data = _serial.serial_event(str)
-            GPS.check_instance(event_data)
-            # first time stamp to be stored, time.time() is used for linux polling
-            t_stamp1 = time.time()
+            if event_data is None:
+                pass
+            else:
+                GPS.check_instance(event_data)
+                # first time stamp to be stored, time.time() is used for linux polling
+                t_stamp1 = time.time()
+                time.sleep(.5)
+
+        #print(GPS.c_lat_value)
+        #print(GPS.c_lon_value)
+        #print(GPS.SatN)
 
         if GPS.o_lat_value is None and GPS.o_lon_value is None:
             GPS.old_instance()
 
-        if GPS.isStale is False:
-            distance = SpeedCalculation.geod_distance(GPS.c_lat_value, GPS.c_lat_value, GPS.o_lon_value,
-                                                      GPS.o_lon_value)
+        #if GPS.isStale is False:
+        distance = SpeedCalculation.geod_distance(GPS.c_lat_value, GPS.c_lat_value, GPS.o_lon_value,
+                                                  GPS.o_lon_value)
 
-            t_stamp2 = time.time()
-            SpeedCalculation.print_speed(t_stamp1, t_stamp2, distance)
-            GPS.old_instance()
-            print(GPS.get_current_num_SatN)
+        t_stamp2 = time.time()
+        SpeedCalculation.print_speed(t_stamp1, t_stamp2, distance)
+        GPS.old_instance()
+        #print(GPS.get_current_num_SatN)
 
 
 # debugging

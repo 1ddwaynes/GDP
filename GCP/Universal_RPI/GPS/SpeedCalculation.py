@@ -45,4 +45,8 @@ def print_speed(time_1, time_2, distance):
     speed_mps = distance / time_delta
     speed_kph = (speed_mps * 3600.0) / 1000.0
 
-    print  (speed_mps)
+    if 0 <= speed_mps:
+        print ("0.0")
+
+    else:
+        print (speed_mps)
